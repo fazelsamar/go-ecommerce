@@ -2,22 +2,29 @@ package main
 
 import (
 	"github.com/fazelsamar/go-ecommerce/database"
-	"github.com/fazelsamar/go-ecommerce/product"
+	"github.com/fazelsamar/go-ecommerce/initializers"
+	"github.com/fazelsamar/go-ecommerce/models"
 	"github.com/gofiber/fiber/v2"
 )
 
 func setupRoutes(app *fiber.App) {
-	app.Get("/products", product.GetProducts)
-	app.Get("/product/:id", product.GetProduct)
-	app.Post("/product", product.NewProducts)
-	app.Delete("/product/:id", product.DeleteProducts)
+	// Product routes
+	app.Get("/products", models.GetProducts)
+	app.Get("/product/:id", models.GetProduct)
+	app.Post("/product", models.NewProducts)
+	app.Delete("/product/:id", models.DeleteProducts)
+
+	//Auth routes
+	app.Post("/register", models.NewUser)
 }
 
 func main() {
-	app := fiber.New()
-
+	initializers.LoadEnvVariables()
 	database.InitDB()
-	database.DBConn.AutoMigrate(&product.Product{})
+	database.DBConn.AutoMigrate(&models.Product{})
+	database.DBConn.AutoMigrate(&models.User{})
+
+	app := fiber.New()
 
 	setupRoutes(app)
 
