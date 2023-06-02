@@ -15,7 +15,8 @@ func setupRoutes(app *fiber.App) {
 	app.Delete("/product/:id", models.DeleteProducts)
 
 	//Auth routes
-	app.Post("/register", models.NewUser)
+	app.Post("/register", models.Register)
+	app.Post("/login", models.Login)
 }
 
 func main() {

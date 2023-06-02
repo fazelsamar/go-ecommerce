@@ -1,8 +1,12 @@
 package models
 
 import (
+	"os"
+	"time"
+
 	"github.com/fazelsamar/go-ecommerce/database"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -13,7 +17,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func NewUser(c *fiber.Ctx) error {
+func Register(c *fiber.Ctx) error {
 	// get username/password from req body
 	user := new(User)
 	if err := c.BodyParser(user); err != nil {
@@ -27,8 +31,8 @@ func NewUser(c *fiber.Ctx) error {
 	}
 
 	// create user
-	db := database.DBConn
 	user.Password = string(hash)
+	db := database.DBConn
 	result := db.Create(&user)
 	if result.Error != nil {
 		return c.Status(400).SendString("Cant create user")
@@ -36,4 +40,41 @@ func NewUser(c *fiber.Ctx) error {
 
 	// respond
 	return c.Status(201).SendString("Created")
+}
+
+func Login(c *fiber.Ctx) error {
+	// get username/password from req body
+	reqUser := new(User)
+	if err := c.BodyParser(reqUser); err != nil {
+		return c.Status(400).SendString("Invalid body")
+	}
+
+	// get the user by username
+	dbUser := new(User)
+	db := database.DBConn
+	db.Where(&User{Username: reqUser.Username}).First(&dbUser)
+	if dbUser.ID <= 0 {
+		return c.Status(400).SendString("Invalid username or password")
+	}
+
+	// compare the passwords
+	err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(reqUser.Password))
+	if err != nil {
+		return c.Status(400).SendString("User not found")
+	}
+
+	// create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": dbUser.ID,
+		"exp":    time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	if err != nil {
+		return c.Status(400).SendString("Cant create token: " + err.Error() + tokenString)
+	}
+
+	// respond
+	return c.JSON(fiber.Map{
+		"token": tokenString,
+	})
 }
