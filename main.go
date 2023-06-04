@@ -12,8 +12,8 @@ func setupRoutes(app *fiber.App) {
 	// Product routes
 	app.Get("/products", models.GetProducts)
 	app.Get("/product/:id", models.GetProduct)
-	app.Post("/product", middleware.RequireAuth, models.NewProducts)
-	app.Delete("/product/:id", middleware.RequireAuth, models.DeleteProducts)
+	app.Post("/product", middleware.RequireAuth, middleware.IsAdmin, models.NewProducts)
+	app.Delete("/product/:id", middleware.RequireAuth, middleware.IsAdmin, models.DeleteProducts)
 
 	//Auth routes
 	app.Post("/register", models.Register)

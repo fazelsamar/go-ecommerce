@@ -15,6 +15,7 @@ type User struct {
 	gorm.Model
 	Username string `json:"username" gorm:"unique"`
 	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin"`
 }
 
 func Register(c *fiber.Ctx) error {
@@ -32,6 +33,7 @@ func Register(c *fiber.Ctx) error {
 
 	// create user
 	user.Password = string(hash)
+	user.IsAdmin = false
 	db := database.DBConn
 	result := db.Create(&user)
 	if result.Error != nil {

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/fazelsamar/go-ecommerce/database"
 	"github.com/gofiber/fiber/v2"
@@ -32,8 +31,6 @@ func GetProduct(c *fiber.Ctx) error {
 }
 
 func NewProducts(c *fiber.Ctx) error {
-	user, _ := c.Locals("user").(User)
-	fmt.Println(user.ID)
 	db := database.DBConn
 	product := new(Product)
 	if err := c.BodyParser(product); err != nil {
