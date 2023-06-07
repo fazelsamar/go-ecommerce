@@ -67,8 +67,9 @@ func Login(c *fiber.Ctx) error {
 
 	// create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userId": dbUser.ID,
-		"exp":    time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"userId":  dbUser.ID,
+		"isAdmin": dbUser.IsAdmin,
+		"exp":     time.Now().Add(time.Hour * 24 * 30 * 365).Unix(),
 	})
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
@@ -77,6 +78,7 @@ func Login(c *fiber.Ctx) error {
 
 	// respond
 	return c.JSON(fiber.Map{
-		"token": tokenString,
+		"token":   tokenString,
+		"isAdmin": dbUser.IsAdmin,
 	})
 }

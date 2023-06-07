@@ -10,16 +10,17 @@ import (
 
 type Product struct {
 	gorm.Model
-	Title     string `json:"title"`
-	Price     uint   `json:"price"`
-	Inventory uint   `json:"inventory"`
-	Image     string `json:"image"`
+	Title       string `json:"title"`
+	Price       uint   `json:"price"`
+	Inventory   uint   `json:"inventory"`
+	Image       string `json:"image"`
+	Description string `json:"description"`
 }
 
 func GetProducts(c *fiber.Ctx) error {
 	db := database.DBConn
 	var products []Product
-	db.Find(&products)
+	db.Order("id DESC").Find(&products)
 	return c.JSON(products)
 }
 
