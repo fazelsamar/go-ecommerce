@@ -16,9 +16,14 @@ func setupRoutes(app *fiber.App) {
 	app.Post("/products", middleware.RequireAuth, middleware.IsAdmin, models.NewProducts)
 	app.Delete("/products/:id", middleware.RequireAuth, middleware.IsAdmin, models.DeleteProducts)
 
-	//Auth routes
+	// Auth routes
 	app.Post("/register", models.Register)
 	app.Post("/login", models.Login)
+
+	// Cart routes
+	app.Get("/cart", models.NewCart)
+	app.Get("/cart/:id", models.GetCart)
+	app.Post("/cart/:id", models.Item)
 }
 
 func main() {
@@ -26,6 +31,8 @@ func main() {
 	database.InitDB()
 	database.DBConn.AutoMigrate(&models.Product{})
 	database.DBConn.AutoMigrate(&models.User{})
+	database.DBConn.AutoMigrate(&models.Cart{})
+	database.DBConn.AutoMigrate(&models.CartItem{})
 
 	app := fiber.New()
 
