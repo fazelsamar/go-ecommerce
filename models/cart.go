@@ -10,22 +10,30 @@ import (
 	"gorm.io/gorm"
 )
 
+type CartItem struct {
+	gorm.Model
+	CartID    uuid.UUID `json:"-"`
+	Cart      Cart      `json:"cart" gorm:"foreignKey:CartID;references:ID;index"`
+	ProductID uint      `json:"-"`
+	Product   Product   `json:"product" gorm:"foreignKey:ProductID;references:ID"`
+	Quantity  uint      `json:"quantity"`
+}
+
 type Cart struct {
 	// gorm.Model
 	ID        uuid.UUID `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	CartItems []CartItem     `json:"cart_items"`
+	// Items []CartItem `json:"items" gorm:"foreignKey:ID"`
 }
 
-type CartItem struct {
-	gorm.Model
-	Cart      Cart      `json:"cart"`
-	CartID    uuid.UUID `gorm:"type:uuid" gorm:"index" json:"cart_id"`
-	Product   Product   `json:"product"`
-	ProductID uint      `json:"product_id"`
-	Quantity  uint      `json:"quantity"`
+type CartSer struct {
+	ID        uuid.UUID      `json:"id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	Items     []CartItem     `json:"items"`
 }
 
 func NewCart(c *fiber.Ctx) error {
@@ -34,6 +42,20 @@ func NewCart(c *fiber.Ctx) error {
 	cart.ID = uuid.New()
 	db.Create(&cart)
 	return c.JSON(cart)
+}
+
+func GetCartSerializer(cart Cart, db *gorm.DB) CartSer {
+	var items []CartItem
+	db.Where("cart_id = ?", cart.ID).Find(&items)
+
+	cart_ser := CartSer{
+		ID:        cart.ID,
+		CreatedAt: cart.CreatedAt,
+		UpdatedAt: cart.UpdatedAt,
+		DeletedAt: cart.DeletedAt,
+		Items:     items,
+	}
+	return cart_ser
 }
 
 func Item(c *fiber.Ctx) error {
@@ -81,19 +103,24 @@ func Item(c *fiber.Ctx) error {
 	cartItem := CartItem{
 		CartID:    cart.ID,
 		ProductID: requestBody.ProductId,
-		Quantity:  requestBody.Quantity,
+		// ProductID: product.ID,
+		Quantity: requestBody.Quantity,
 	}
 
 	// Add the CartItem to Cart's CartItems slice
-	cart.CartItems = append(cart.CartItems, cartItem)
+	// cart.Items = append(cart.Items, cartItem)
 
 	// Save the changes to the database
-	saveResult := db.Save(&cart)
+	saveResult := db.Save(&cartItem)
+	if saveResult.Error != nil {
+		return c.Status(500).SendString("Failed to add item to cart!")
+	}
+	saveResult = db.Save(&cart)
 	if saveResult.Error != nil {
 		return c.Status(500).SendString("Failed to add item to cart!")
 	}
 
-	return c.JSON(cart)
+	return c.JSON(GetCartSerializer(cart, db))
 }
 
 func GetCart(c *fiber.Ctx) error {
@@ -105,19 +132,9 @@ func GetCart(c *fiber.Ctx) error {
 		if errors.Is(cart_result.Error, gorm.ErrRecordNotFound) {
 			return c.Status(404).SendString("Not Found!")
 		} else {
-			return c.Status(500).SendString("Something went wrong!")
+			return c.Status(500).SendString("Something went wrong!" + cart_result.Error.Error())
 		}
 	}
 
-	var cart_item []CartItem
-	cart_item_result := db.Find(&cart_item, "cart_id = ?", cart.ID)
-	if cart_item_result.Error != nil {
-		if errors.Is(cart_item_result.Error, gorm.ErrRecordNotFound) {
-			return c.Status(404).SendString("Not Found!")
-		} else {
-			return c.Status(500).SendString("Something went wrong!")
-		}
-	}
-
-	return c.JSON(cart_item_result)
+	return c.JSON(GetCartSerializer(cart, db))
 }
