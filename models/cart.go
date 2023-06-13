@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/fazelsamar/go-ecommerce/database"
@@ -11,29 +12,33 @@ import (
 )
 
 type CartItem struct {
-	gorm.Model
-	CartID    uuid.UUID `json:"-"`
-	Cart      Cart      `json:"cart" gorm:"foreignKey:CartID;references:ID;index"`
-	ProductID uint      `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
+	CartID    uuid.UUID `json:"-" gorm:"primaryKey;index"`
+	Cart      Cart      `json:"cart" gorm:"foreignKey:CartID;references:ID"`
+	ProductID uint      `json:"-" gorm:"primaryKey;index"`
 	Product   Product   `json:"product" gorm:"foreignKey:ProductID;references:ID"`
 	Quantity  uint      `json:"quantity"`
 }
 
 type Cart struct {
-	// gorm.Model
-	ID        uuid.UUID `gorm:"primaryKey" json:"id"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	// Items []CartItem `json:"items" gorm:"foreignKey:ID"`
+	ID        uuid.UUID      `json:"id" gorm:"index;primaryKey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
 
-type CartSer struct {
+type ResponseCartItem struct {
+	CreatedAt time.Time `json:"created_at"`
+	Product   Product   `json:"product"`
+	Quantity  uint      `json:"quantity"`
+}
+
+type ResponseCart struct {
 	ID        uuid.UUID      `json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
-	Items     []CartItem     `json:"items"`
+	Items     []ResponseCartItem
 }
 
 func NewCart(c *fiber.Ctx) error {
@@ -44,16 +49,23 @@ func NewCart(c *fiber.Ctx) error {
 	return c.JSON(cart)
 }
 
-func GetCartSerializer(cart Cart, db *gorm.DB) CartSer {
+func GetCartSerializer(cart Cart, db *gorm.DB) ResponseCart {
 	var items []CartItem
-	db.Where("cart_id = ?", cart.ID).Find(&items)
-
-	cart_ser := CartSer{
+	db.Preload("Product").Where("cart_id = ?", cart.ID).Find(&items)
+	// fmt.Println(items)
+	response_items := make([]ResponseCartItem, len(items))
+	for index, item := range items {
+		fmt.Println(item.Product.ID)
+		response_items[index].CreatedAt = item.CreatedAt
+		response_items[index].Product = item.Product
+		response_items[index].Quantity = item.Quantity
+	}
+	cart_ser := ResponseCart{
 		ID:        cart.ID,
 		CreatedAt: cart.CreatedAt,
 		UpdatedAt: cart.UpdatedAt,
 		DeletedAt: cart.DeletedAt,
-		Items:     items,
+		Items:     response_items,
 	}
 	return cart_ser
 }
@@ -63,10 +75,9 @@ func Item(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DBConn
 	var cart Cart
-	cart_result := db.First(&cart, "id = ?", id)
-	if cart_result.Error != nil {
+	if cart_result := db.First(&cart, "id = ?", id); cart_result.Error != nil {
 		if errors.Is(cart_result.Error, gorm.ErrRecordNotFound) {
-			return c.Status(404).SendString("Not Found!")
+			return c.Status(404).SendString("Cart Not Found!")
 		} else {
 			return c.Status(500).SendString("Something went wrong!")
 		}
@@ -96,26 +107,32 @@ func Item(c *fiber.Ctx) error {
 
 	// Check the product quantity
 	if requestBody.Quantity > product.Inventory {
-		return c.Status(400).SendString("Not enough inventory!")
+		return c.Status(400).SendString("Not enough inventory for product_id = " + fmt.Sprint(product.ID))
 	}
 
-	// Add product to cartItems
-	cartItem := CartItem{
-		CartID:    cart.ID,
-		ProductID: requestBody.ProductId,
-		// ProductID: product.ID,
-		Quantity: requestBody.Quantity,
+	// Check the existing product in cart
+	var cartItem CartItem
+	var saveResult *gorm.DB
+	db.Where("cart_id = ?", cart.ID).Where("product_id = ?", requestBody.ProductId).Find(&cartItem)
+	if cartItem.Quantity == 0 {
+		// Add product to cartItem
+		cartItem = CartItem{
+			CartID:    cart.ID,
+			ProductID: requestBody.ProductId,
+			Quantity:  requestBody.Quantity,
+		}
+		saveResult = db.Create(&cartItem)
+	} else {
+		// Check the quantity of product in cart and inventory of product
+		if requestBody.Quantity+cartItem.Quantity > product.Inventory {
+			return c.Status(400).SendString("Not enough inventory for product_id = " + fmt.Sprint(product.ID))
+		}
+
+		// Update quantity of product in cartItem
+		cartItem.Quantity += requestBody.Quantity
+		saveResult = db.Save(&cartItem)
 	}
 
-	// Add the CartItem to Cart's CartItems slice
-	// cart.Items = append(cart.Items, cartItem)
-
-	// Save the changes to the database
-	saveResult := db.Save(&cartItem)
-	if saveResult.Error != nil {
-		return c.Status(500).SendString("Failed to add item to cart!")
-	}
-	saveResult = db.Save(&cart)
 	if saveResult.Error != nil {
 		return c.Status(500).SendString("Failed to add item to cart!")
 	}
@@ -135,6 +152,5 @@ func GetCart(c *fiber.Ctx) error {
 			return c.Status(500).SendString("Something went wrong!" + cart_result.Error.Error())
 		}
 	}
-
 	return c.JSON(GetCartSerializer(cart, db))
 }
