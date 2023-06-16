@@ -23,7 +23,8 @@ func setupRoutes(app *fiber.App) {
 	// Cart routes
 	app.Get("/cart", models.NewCart)
 	app.Get("/cart/:id", models.GetCart)
-	app.Post("/cart/:id", models.Item)
+	app.Post("/cart/:id", models.AddItem)
+	app.Delete("/cart/:id", models.DeleteCart)
 }
 
 func main() {

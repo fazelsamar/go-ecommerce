@@ -70,7 +70,7 @@ func GetCartSerializer(cart Cart, db *gorm.DB) ResponseCart {
 	return cart_ser
 }
 
-func Item(c *fiber.Ctx) error {
+func AddItem(c *fiber.Ctx) error {
 	// Check the cart
 	id := c.Params("id")
 	db := database.DBConn
@@ -85,8 +85,8 @@ func Item(c *fiber.Ctx) error {
 
 	// Get the product and quantity from the request body
 	type RequestBody struct {
-		ProductId uint
-		Quantity  uint
+		ProductId uint `json:"product_id"`
+		Quantity  uint `json:"quantity"`
 	}
 	var requestBody RequestBody
 	err := c.BodyParser(&requestBody)
@@ -147,10 +147,27 @@ func GetCart(c *fiber.Ctx) error {
 	cart_result := db.First(&cart, "id = ?", id)
 	if cart_result.Error != nil {
 		if errors.Is(cart_result.Error, gorm.ErrRecordNotFound) {
-			return c.Status(404).SendString("Not Found!")
+			return c.Status(404).SendString("Cart Not Found!")
 		} else {
-			return c.Status(500).SendString("Something went wrong!" + cart_result.Error.Error())
+			return c.Status(500).SendString("Something went wrong!")
 		}
 	}
 	return c.JSON(GetCartSerializer(cart, db))
+}
+
+func DeleteCart(c *fiber.Ctx) error {
+	id := c.Params("id")
+	db := database.DBConn
+	var cart Cart
+	cart_result := db.First(&cart, "id = ?", id)
+	if cart_result.Error != nil {
+		if errors.Is(cart_result.Error, gorm.ErrRecordNotFound) {
+			return c.Status(404).SendString("Cart Not Found!")
+		} else {
+			return c.Status(500).SendString("Something went wrong!")
+		}
+	}
+
+	db.Delete(&cart)
+	return c.Status(204).SendString("")
 }
