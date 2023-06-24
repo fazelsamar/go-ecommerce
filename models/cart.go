@@ -55,7 +55,6 @@ func GetCartSerializer(cart Cart, db *gorm.DB) ResponseCart {
 	// fmt.Println(items)
 	response_items := make([]ResponseCartItem, len(items))
 	for index, item := range items {
-		fmt.Println(item.Product.ID)
 		response_items[index].CreatedAt = item.CreatedAt
 		response_items[index].Product = item.Product
 		response_items[index].Quantity = item.Quantity

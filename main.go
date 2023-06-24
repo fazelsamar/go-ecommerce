@@ -25,6 +25,7 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/cart/:id", models.GetCart)
 	app.Post("/cart/:id", models.AddItem)
 	app.Delete("/cart/:id", models.DeleteCart)
+	app.Get("/order/:cart_id", models.CreateOrder)
 }
 
 func main() {
@@ -34,6 +35,8 @@ func main() {
 	database.DBConn.AutoMigrate(&models.User{})
 	database.DBConn.AutoMigrate(&models.Cart{})
 	database.DBConn.AutoMigrate(&models.CartItem{})
+	database.DBConn.AutoMigrate(&models.Order{})
+	database.DBConn.AutoMigrate(&models.OrderItem{})
 
 	app := fiber.New()
 
