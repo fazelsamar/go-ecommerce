@@ -23,7 +23,7 @@ func saveUploadedFile(file *multipart.FileHeader) (string, error) {
 
 	// Validate file MIME type
 	if !strings.HasPrefix(file.Header.Get("Content-Type"), "image/") {
-		return "", errors.New("Invalid file type. Only images are allowed")
+		return "", errors.New("invalid file type. Only images are allowed")
 	}
 
 	// Create a unique file name
@@ -71,24 +71,24 @@ func createDirectory(dirPath string) error {
 }
 
 // Helper function to generate a unique file path for the uploaded file
-func generateFilePath(filename string) string {
-	// Get the current working directory
-	cwd, err := os.Getwd()
-	if err != nil {
-		return ""
-	}
+// func GenerateFilePath(filename string) string {
+// 	// Get the current working directory
+// 	cwd, err := os.Getwd()
+// 	if err != nil {
+// 		return ""
+// 	}
 
-	// Create a new directory uploadPath if it doesn't exist
-	uploadsDir := filepath.Join(cwd, uploadPath)
-	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
-		os.Mkdir(uploadsDir, 0755)
-	}
+// 	// Create a new directory uploadPath if it doesn't exist
+// 	uploadsDir := filepath.Join(cwd, uploadPath)
+// 	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
+// 		os.Mkdir(uploadsDir, 0755)
+// 	}
 
-	// Generate a unique file name using a timestamp and the original file name
-	fileName := fmt.Sprintf("%d_%s", time.Now().Unix(), filename)
+// 	// Generate a unique file name using a timestamp and the original file name
+// 	fileName := fmt.Sprintf("%d_%s", time.Now().Unix(), filename)
 
-	// Construct the full file path by combining the uploads directory and the unique file name
-	filePath := filepath.Join(uploadsDir, fileName)
+// 	// Construct the full file path by combining the uploads directory and the unique file name
+// 	filePath := filepath.Join(uploadsDir, fileName)
 
-	return "/" + filepath.ToSlash(filePath)
-}
+// 	return "/" + filepath.ToSlash(filePath)
+// }
