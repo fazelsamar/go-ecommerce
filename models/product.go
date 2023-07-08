@@ -18,7 +18,7 @@ type Product struct {
 }
 
 func GetProducts(c *fiber.Ctx) error {
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var products []Product
 	db.Order("id DESC").Find(&products)
 	return c.JSON(products)
@@ -26,7 +26,7 @@ func GetProducts(c *fiber.Ctx) error {
 
 func GetProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var product Product
 	result := db.First(&product, id)
 	if result.Error != nil {
@@ -73,14 +73,14 @@ func NewProducts(c *fiber.Ctx) error {
 		return c.Status(500).SendString("Failed to get image file!")
 	}
 
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	db.Create(&product)
 	return c.JSON(product)
 }
 
 func DeleteProducts(c *fiber.Ctx) error {
 	id := c.Params("id")
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var product Product
 	db.First(&product, id)
 	result := db.First(&product, id)

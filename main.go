@@ -25,18 +25,22 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/cart/:id", models.GetCart)
 	app.Post("/cart/:id", models.AddItem)
 	app.Delete("/cart/:id", models.DeleteCart)
-	app.Get("/order/:cart_id", models.CreateOrder)
+
+	// Order routes
+	app.Get("/order/:cart_id", middleware.RequireAuth, models.CreateOrder)
+	app.Get("/orders", middleware.RequireAuth, models.GetTheOrders)
 }
 
 func main() {
 	initializers.LoadEnvVariables()
 	database.InitDB()
-	database.DBConn.AutoMigrate(&models.Product{})
-	database.DBConn.AutoMigrate(&models.User{})
-	database.DBConn.AutoMigrate(&models.Cart{})
-	database.DBConn.AutoMigrate(&models.CartItem{})
-	database.DBConn.AutoMigrate(&models.Order{})
-	database.DBConn.AutoMigrate(&models.OrderItem{})
+	db := database.GetDatabaseConnection()
+	db.AutoMigrate(&models.Product{})
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Cart{})
+	db.AutoMigrate(&models.CartItem{})
+	db.AutoMigrate(&models.Order{})
+	db.AutoMigrate(&models.OrderItem{})
 
 	app := fiber.New()
 

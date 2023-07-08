@@ -1,21 +1,38 @@
 package database
 
 import (
+	"fmt"
 	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DBConn *gorm.DB
+var dbConn *gorm.DB
 
-func InitDB() error {
+func getDSN() string {
+	host := os.Getenv("DATABASE_HOST")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	db := os.Getenv("POSTGRES_DB")
+	port := os.Getenv("DATABASE_PORT")
+	ssl := os.Getenv("POSTGRES_SSL")
+	timezone := os.Getenv("POSTGRES_TIMEZONE")
+	conStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, user, password, db, port, ssl, timezone)
+	return conStr
+}
+
+func InitDB() {
 	var err error
-
-	dsn := os.Getenv("POSTGRES_URL")
-	DBConn, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dbConn, err = gorm.Open(postgres.Open(getDSN()), &gorm.Config{})
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
+}
+
+func GetDatabaseConnection() *gorm.DB {
+	if dbConn == nil {
+		InitDB()
+	}
+	return dbConn
 }

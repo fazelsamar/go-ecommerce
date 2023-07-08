@@ -34,7 +34,7 @@ func Register(c *fiber.Ctx) error {
 	// create user
 	user.Password = string(hash)
 	user.IsAdmin = false
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	result := db.Create(&user)
 	if result.Error != nil {
 		return c.Status(400).SendString("Cant create user")
@@ -53,7 +53,7 @@ func Login(c *fiber.Ctx) error {
 
 	// get the user by username
 	dbUser := new(User)
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	db.Where(&User{Username: reqUser.Username}).First(&dbUser)
 	if dbUser.ID <= 0 {
 		return c.Status(400).SendString("Invalid username or password")

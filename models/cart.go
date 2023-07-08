@@ -42,7 +42,7 @@ type ResponseCart struct {
 }
 
 func NewCart(c *fiber.Ctx) error {
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	cart := new(Cart)
 	cart.ID = uuid.New()
 	db.Create(&cart)
@@ -72,7 +72,7 @@ func GetCartSerializer(cart Cart, db *gorm.DB) ResponseCart {
 func AddItem(c *fiber.Ctx) error {
 	// Check the cart
 	id := c.Params("id")
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var cart Cart
 	if cart_result := db.First(&cart, "id = ?", id); cart_result.Error != nil {
 		if errors.Is(cart_result.Error, gorm.ErrRecordNotFound) {
@@ -141,7 +141,7 @@ func AddItem(c *fiber.Ctx) error {
 
 func GetCart(c *fiber.Ctx) error {
 	id := c.Params("id")
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var cart Cart
 	cart_result := db.First(&cart, "id = ?", id)
 	if cart_result.Error != nil {
@@ -156,7 +156,7 @@ func GetCart(c *fiber.Ctx) error {
 
 func DeleteCart(c *fiber.Ctx) error {
 	id := c.Params("id")
-	db := database.DBConn
+	db := database.GetDatabaseConnection()
 	var cart Cart
 	cart_result := db.First(&cart, "id = ?", id)
 	if cart_result.Error != nil {
