@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fazelsamar/go-ecommerce/database"
+	"github.com/fazelsamar/go-ecommerce/pkg/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"

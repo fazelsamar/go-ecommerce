@@ -3,7 +3,7 @@ package models
 import (
 	"errors"
 
-	"github.com/fazelsamar/go-ecommerce/database"
+	"github.com/fazelsamar/go-ecommerce/pkg/database"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
