@@ -23,12 +23,16 @@ func NewRouting() *Routing {
 func (r *Routing) routes() {
 
 	userRepo := repositories.NewUserRepository()
-	userUsecase := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userUsecase)
+	userservice := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userservice)
 
 	productRepo := repositories.NewProductRepository()
-	productUsecase := services.NewProductService(productRepo)
-	productHandler := handlers.NewProductHandler(productUsecase)
+	productservice := services.NewProductService(productRepo)
+	productHandler := handlers.NewProductHandler(productservice)
+
+	cartRepo := repositories.NewCartRepository()
+	cartservice := services.NewCartService(cartRepo)
+	cartHandler := handlers.NewCartHandler(cartservice)
 
 	// Auth routes
 	r.App.Post("/register", userHandler.Register)
@@ -41,7 +45,7 @@ func (r *Routing) routes() {
 	r.App.Delete("/products/:id", middleware.RequireAuth, middleware.IsAdmin, productHandler.DeleteProduct)
 
 	// // Cart routes
-	// r.App.Get("/cart", models.NewCart)
+	r.App.Get("/cart", cartHandler.NewCart)
 	// r.App.Get("/cart/:id", models.GetCart)
 	// r.App.Post("/cart/:id", models.AddItem)
 	// r.App.Delete("/cart/:id", models.DeleteCart)
