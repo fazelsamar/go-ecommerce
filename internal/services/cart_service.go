@@ -11,6 +11,10 @@ import (
 
 type CartService interface {
 	CreateCart() (*entity.Cart, error)
+	GetCartById(string) (entity.Cart, error)
+	GetCartItemByCartIdAndProductId(cart_id uuid.UUID, product_id uint) (entity.CartItem, error)
+	GetCartSerializer(entity.Cart) interface{}
+	SaveCartItem(entity.CartItem) (entity.CartItem, error)
 }
 
 type cartService struct {
@@ -60,4 +64,16 @@ func (cs cartService) GetCartSerializer(cart entity.Cart) interface{} {
 		Items:     response_items,
 	}
 	return cart_ser
+}
+
+func (cs cartService) GetCartById(id string) (entity.Cart, error) {
+	return cs.cartRepository.GetById(id)
+}
+
+func (cs cartService) GetCartItemByCartIdAndProductId(cart_id uuid.UUID, product_id uint) (entity.CartItem, error) {
+	return cs.cartRepository.GetCartItemByCartIdAndProductId(cart_id, product_id)
+}
+
+func (cs cartService) SaveCartItem(input entity.CartItem) (entity.CartItem, error) {
+	return cs.cartRepository.SaveCartItem(input)
 }

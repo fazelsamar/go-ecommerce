@@ -32,7 +32,7 @@ func (r *Routing) routes() {
 
 	cartRepo := repositories.NewCartRepository()
 	cartservice := services.NewCartService(cartRepo)
-	cartHandler := handlers.NewCartHandler(cartservice)
+	cartHandler := handlers.NewCartHandler(cartservice, productservice)
 
 	// Auth routes
 	r.App.Post("/register", userHandler.Register)
@@ -47,7 +47,7 @@ func (r *Routing) routes() {
 	// // Cart routes
 	r.App.Get("/cart", cartHandler.NewCart)
 	// r.App.Get("/cart/:id", models.GetCart)
-	// r.App.Post("/cart/:id", models.AddItem)
+	r.App.Post("/cart/:id", cartHandler.AddItem)
 	// r.App.Delete("/cart/:id", models.DeleteCart)
 
 	// // Order routes
