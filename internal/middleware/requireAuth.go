@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fazelsamar/go-ecommerce/models"
+	"github.com/fazelsamar/go-ecommerce/internal/entity"
 	"github.com/fazelsamar/go-ecommerce/pkg/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -38,7 +38,7 @@ func RequireAuth(c *fiber.Ctx) error {
 		}
 
 		// find the user
-		var user models.User
+		var user entity.User
 		db := database.GetDatabaseConnection()
 		db.First(&user, claims["userId"])
 
