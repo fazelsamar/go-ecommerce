@@ -46,9 +46,9 @@ func (r *Routing) routes() {
 
 	// // Cart routes
 	r.App.Get("/cart", cartHandler.NewCart)
-	// r.App.Get("/cart/:id", models.GetCart)
+	r.App.Get("/cart/:id", cartHandler.GetCart)
 	r.App.Post("/cart/:id", cartHandler.AddItem)
-	// r.App.Delete("/cart/:id", models.DeleteCart)
+	r.App.Delete("/cart/:id", cartHandler.DeleteCart)
 
 	// // Order routes
 	// r.App.Get("/order/:cart_id", middleware.RequireAuth, models.CreateOrder)

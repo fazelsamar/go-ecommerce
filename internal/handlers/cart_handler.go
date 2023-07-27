@@ -13,6 +13,8 @@ import (
 type CartHandler interface {
 	NewCart(*fiber.Ctx) error
 	AddItem(*fiber.Ctx) error
+	GetCart(*fiber.Ctx) error
+	DeleteCart(*fiber.Ctx) error
 }
 
 type cartHandler struct {
@@ -102,4 +104,36 @@ func (ch cartHandler) AddItem(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(ch.cartService.GetCartSerializer(cart))
+}
+
+func (ch cartHandler) GetCart(c *fiber.Ctx) error {
+	// Check the cart
+	id := c.Params("id")
+	cart, err := ch.cartService.GetCartById(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"massage": "Cart Not Found!"})
+		} else {
+			return c.Status(500).JSON(fiber.Map{"massage": "Something went wrong!"})
+		}
+	}
+	return c.JSON(ch.cartService.GetCartSerializer(cart))
+}
+
+func (ch cartHandler) DeleteCart(c *fiber.Ctx) error {
+	// Check the cart
+	id := c.Params("id")
+	cart, err := ch.cartService.GetCartById(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"massage": "Cart Not Found!"})
+		} else {
+			return c.Status(500).JSON(fiber.Map{"massage": "Something went wrong!"})
+		}
+	}
+	err = ch.cartService.DeleteCartById(cart.ID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"massage": "Something went wrong!"})
+	}
+	return c.JSON(fiber.Map{"massage": "Deleted successfully"})
 }
