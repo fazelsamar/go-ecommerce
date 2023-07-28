@@ -1,7 +1,5 @@
 # Go Eccomerce
-
-## Description
-Describe your project here, including its purpose, functionality, and any key features.
+This Go application is a backend implementation for an eccomerce application. It provides a range of features such as user authentication, products management, creating carts and orders. 
 
 ## Technologies Used
 - Go
@@ -15,13 +13,14 @@ Describe your project here, including its purpose, functionality, and any key fe
 ### Prerequisites
 - Docker
 - Docker Compose
+- Go
 
 Clone the repository:
 ```shell
 git clone https://github.com/fazelsamar/go-ecommerce.git
 ```
 
-To run this application you have two aptions:
+To run this application you have two options:
 
 1. First is to run it using docker-compose for production :
 
@@ -38,17 +37,32 @@ To run this application you have two aptions:
     ```shell
     go run ./cmd
     ```
-## Usage
-Explain how to use your application here. Provide any necessary instructions or examples.
 
-## Project Structure
-Provide a high-level overview of your project's file structure, including the purpose of key files and directories.
+## Features
+
+### This application provides a range of features including:
+
+- #### User authentication: users can sign up, log in and log out.
+- #### Create and delete products by admin.
+- #### Create and delete cart by anonymous user.
+- #### Add products to the cart.
+- #### Creating the order base on the carts.
+
+## Code Structure
+
+- `cmd`: contains the main go entry file.
+- `internal/`
+    - `entity`: contains database models.
+    - `handlers`: contains http handlers for each of the supported endpoints.
+    - `middleware`: contains custom middleware used in the application.
+    - `repositories`: contains implementations of the persistence interface to interact with the database.
+    - `routes`: contains the main application logic for the backend.
+    - `services`: contains the business logic and use case implementation of the application.
+- `pkg`: contains the packages such as database connection and managing env files.
+- `proxy`: contains the nginx config file.
 
 ## Contributing
-Provide guidelines for contributing to your project, if applicable.
 
-## License
-Specify the license under which your project is distributed.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Contact
-Provide contact information for users to reach out for support or inquiries.
+<p style="text-align: center; width: 100%; ">Copyright&copy; 2023 <a href="https://github.com/fazelsamar">Fazelsamar</a>, Licensed under MIT</p>
