@@ -1,5 +1,5 @@
-# Go Eccomerce
-This Go application is a backend implementation for an eccomerce application. It provides a range of features such as user authentication, products management, creating carts and orders. 
+# Go Ecommerce
+This Go application is a backend implementation for an ecommerce application. It provides a range of features such as user authentication, products management, creating carts and orders. This project is using clean architecture.
 
 ## Technologies Used
 - Go
