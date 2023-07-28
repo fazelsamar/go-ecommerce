@@ -141,6 +141,8 @@ func (oh orderHandler) CreateOrder(c *fiber.Ctx) error {
 	// Delete the cart
 	oh.cartService.DeleteCartById(cart.ID)
 
+	// TODO: Decrease the quantity of each product
+
 	return c.JSON(oh.GetOrderSerializer(*order_res))
 }
 
