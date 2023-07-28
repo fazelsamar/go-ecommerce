@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/fazelsamar/go-ecommerce/internal/entity"
 	"github.com/fazelsamar/go-ecommerce/internal/routes"
 	"github.com/fazelsamar/go-ecommerce/pkg/database"
@@ -27,5 +29,5 @@ func main() {
 	// Serve static files from the "mediafiles" directory
 	r.App.Static("/mediafiles", "./mediafiles")
 
-	r.App.Listen(":8000")
+	r.App.Listen(":" + os.Getenv("EXPOSE_PORT"))
 }
